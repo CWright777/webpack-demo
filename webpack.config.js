@@ -12,7 +12,7 @@ const PATHS = {
 
 const common = {
   entry: {
-    app: PATHS.app
+    app: PATHS.app,
   },
   output: {
     path: PATHS.build,
@@ -32,6 +32,7 @@ module.exports = function(env) {
       {
         devtool: 'source-map'
       },
+      parts.minify(),
       parts.setupCSS(PATHS.app)
     );
   } 
@@ -45,6 +46,14 @@ module.exports = function(env) {
         hints: false
       }
     },
+    parts.setFreeVariable(
+      'process.env.NODE_ENV',
+      'production'
+    ),
+    parts.extractBundle({
+      name: 'vendor',
+      entries: ['react']
+    }), 
     parts.setupCSS(PATHS.app),
     parts.devServer({
       // Customize host/port here if needed
