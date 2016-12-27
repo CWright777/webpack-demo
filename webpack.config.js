@@ -2,9 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const merge = require('webpack-merge');
 
-//const validate = require('webpack-validator');
-
-const parts = require('./webpack.parts')
+const parts = require('./webpack.parts');
 
 const PATHS = {
   app: path.join(__dirname, 'app'),
@@ -18,7 +16,7 @@ const PATHS = {
 const common = {
   entry: {
     style: PATHS.style,
-    app: PATHS.app,
+    app: PATHS.app
   },
   output: {
     path: PATHS.build,
@@ -28,50 +26,79 @@ const common = {
     new HtmlWebpackPlugin({
       title: 'Webpack demo'
     })
-  ]
+  ],
+  resolve: {
+    extensions: ['.js', '.jsx']
+  }
 };
 
 module.exports = function(env) {
- if (env === 'build') {
+  if (env === 'build') {
     return merge(
       common,
       {
-        devtool: 'source-map'
+        devtool: 'source-map',
+        output: {
+          path: PATHS.build,
+          filename: '[name].[chunkhash].js',
+          // This is used for code splitting. The setup
+          // will work without but this is useful to set.
+          chunkFilename: '[chunkhash].js',
+          // Tweak this to match your GitHub project name
+          publicPath: '/webpack-demo/'
+        }
       },
+      {
+        module: {
+          rules: [
+            {
+              test: /\.(js|jsx)$/,
+              use: 'babel-loader',
+              options: {
+                // Enable caching for improved performance during
+                // development.
+                // It uses default OS directory by default. If you need
+                // something more custom, pass a path to it.
+                // I.e., babel?cacheDirectory=<path>
+                cacheDirectory: true
+              },
+              // Parse only app files! Without this it will go through
+              // the entire project. In addition to being slow,
+              // that will most likely result in an error.
+              include: PATHS.app
+            },
+          ]
+        }
+      },
+      parts.clean(PATHS.build),
+      parts.setFreeVariable(
+        'process.env.NODE_ENV',
+        'production'
+      ),
+      parts.extractBundle({
+        name: 'vendor',
+        entries: ['react']
+      }),
       parts.minify(),
       parts.extractCSS(PATHS.style),
       parts.purifyCSS([PATHS.app])
     );
-  } 
+  }
 
   return merge(
     common,
     {
+      devtool: 'eval-source-map',
       // Disable performance hints during development
-      devtool: 'source-map',
-      output: {
-        path: PATHS.build,
-        filename: '[name].[chunkhash].js',
-        // This is used for code splitting. The setup
-        // will work without but this is useful to set.
-        chunkFilename: '[chunkhash].js'
+      performance: {
+        hints: false
       }
     },
     parts.setupCSS(PATHS.style),
-    parts.clean(PATHS.build),
-    parts.setFreeVariable(
-      'process.env.NODE_ENV',
-      'production'
-    ),
-    parts.extractBundle({
-      name: 'vendor',
-      entries: ['react']
-    }), 
-    parts.extractCSS(PATHS.app),
     parts.devServer({
       // Customize host/port here if needed
       host: process.env.HOST,
       port: process.env.PORT
     })
   );
-}
+};
