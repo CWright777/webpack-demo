@@ -1,17 +1,23 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const merge = require('webpack-merge');
+
 //const validate = require('webpack-validator');
 
 const parts = require('./webpack.parts')
 
 const PATHS = {
   app: path.join(__dirname, 'app'),
+  style: [
+    path.join(__dirname, 'node_modules', 'purecss'),
+    path.join(__dirname, 'app', 'main.css')
+  ],
   build: path.join(__dirname, 'build')
 };
 
 const common = {
   entry: {
+    style: PATHS.style,
     app: PATHS.app,
   },
   output: {
@@ -33,7 +39,8 @@ module.exports = function(env) {
         devtool: 'source-map'
       },
       parts.minify(),
-      parts.setupCSS(PATHS.app)
+      parts.extractCSS(PATHS.style),
+      parts.purifyCSS([PATHS.app])
     );
   } 
 
@@ -50,6 +57,7 @@ module.exports = function(env) {
         chunkFilename: '[chunkhash].js'
       }
     },
+    parts.setupCSS(PATHS.style),
     parts.clean(PATHS.build),
     parts.setFreeVariable(
       'process.env.NODE_ENV',
@@ -59,7 +67,7 @@ module.exports = function(env) {
       name: 'vendor',
       entries: ['react']
     }), 
-    parts.setupCSS(PATHS.app),
+    parts.extractCSS(PATHS.app),
     parts.devServer({
       // Customize host/port here if needed
       host: process.env.HOST,

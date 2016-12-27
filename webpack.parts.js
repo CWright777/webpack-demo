@@ -1,4 +1,8 @@
 const webpack = require('webpack');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const PurifyCSSPlugin = require('purifycss-webpack-plugin');
+
 exports.devServer = function(options) {
   return {
     devServer: {
@@ -95,3 +99,41 @@ exports.clean = function(path) {
     ]
   };
 }
+
+exports.extractCSS = function(paths) {
+  return {
+    module: {
+      rules: [
+        // Extract CSS during build
+        {
+          test: /\.css$/,
+          loader: ExtractTextPlugin.extract({
+            fallbackLoader: 'style-loader',
+            loader: 'css-loader'
+          }),
+          include: paths
+        }
+      ]
+    },
+    plugins: [
+      // Output extracted CSS to a file
+      new ExtractTextPlugin('[name].[chunkhash].css')
+    ]
+  };
+}
+
+exports.purifyCSS = function(paths) {
+  return {
+    plugins: [
+      new PurifyCSSPlugin({
+        basePath: process.cwd(),
+        // `paths` is used to point PurifyCSS to files not
+        // visible to Webpack. This expects glob patterns so
+        // we adapt here.
+        paths: paths.map(path => `${path}/*`),
+        // Walk through only html files within node_modules. It
+        // picks up .js files by default!
+        resolveExtensions: ['.html']
+      }),
+    ]
+} }
