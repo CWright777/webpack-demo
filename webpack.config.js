@@ -41,11 +41,16 @@ module.exports = function(env) {
     common,
     {
       // Disable performance hints during development
-      devtool: 'eval-source-map',
-      performance: {
-        hints: false
+      devtool: 'source-map',
+      output: {
+        path: PATHS.build,
+        filename: '[name].[chunkhash].js',
+        // This is used for code splitting. The setup
+        // will work without but this is useful to set.
+        chunkFilename: '[chunkhash].js'
       }
     },
+    parts.clean(PATHS.build),
     parts.setFreeVariable(
       'process.env.NODE_ENV',
       'production'
