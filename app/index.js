@@ -6,14 +6,13 @@ import Dashboard from './containers/Dashboard'
 import configureStore from './store/configureStore';
 
 import App from './containers/App';
-import component from './component';
 
 
 const store = configureStore();
 
 const routes = (
  <Route path="/" component={App} >
-   <Route component={Dashboard}/>
+   <IndexRoute component={Dashboard}/>
  </Route>
 )
 
