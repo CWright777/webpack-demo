@@ -24,12 +24,33 @@ const common = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: 'Webpack demo'
+      title: 'Webpack demo',
+      template : __dirname + '/app/index.html'
     })
   ],
   resolve: {
     extensions: ['.js', '.jsx']
-  }
+  },
+    module: {
+      rules: [
+        {
+          test: /\.(js|jsx)$/,
+          use: 'babel-loader',
+          options: {
+            // Enable caching for improved performance during
+            // development.
+            // It uses default OS directory by default. If you need
+            // something more custom, pass a path to it.
+            // I.e., babel?cacheDirectory=<path>
+            cacheDirectory: true
+          },
+          // Parse only app files! Without this it will go through
+          // the entire project. In addition to being slow,
+          // that will most likely result in an error.
+          include: PATHS.app
+        },
+      ]
+  },
 };
 
 module.exports = function(env) {
@@ -46,28 +67,6 @@ module.exports = function(env) {
           chunkFilename: '[chunkhash].js',
           // Tweak this to match your GitHub project name
           publicPath: '/webpack-demo/'
-        }
-      },
-      {
-        module: {
-          rules: [
-            {
-              test: /\.(js|jsx)$/,
-              use: 'babel-loader',
-              options: {
-                // Enable caching for improved performance during
-                // development.
-                // It uses default OS directory by default. If you need
-                // something more custom, pass a path to it.
-                // I.e., babel?cacheDirectory=<path>
-                cacheDirectory: true
-              },
-              // Parse only app files! Without this it will go through
-              // the entire project. In addition to being slow,
-              // that will most likely result in an error.
-              include: PATHS.app
-            },
-          ]
         }
       },
       parts.clean(PATHS.build),
